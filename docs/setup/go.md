@@ -14,7 +14,7 @@ The CRDT extension and engine are bundled per platform — no separate downloads
 ## Install
 
 ```bash
-go get github.com/ara-mesh/ara-go
+go get github.com/ara-mesh/ara-sdk-go
 ```
 
 ## Quick start
@@ -26,7 +26,7 @@ import (
     "context"
     "log"
 
-    ara "github.com/ara-mesh/ara-go"
+    ara "github.com/ara-mesh/ara-sdk-go"
 )
 
 var migrations = []ara.Migration{

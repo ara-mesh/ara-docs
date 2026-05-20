@@ -11,7 +11,7 @@ of which migration version they're running.
 ## Migration struct
 
 ```go
-// Go (ara-go)
+// Go (ara-sdk-go)
 type Migration struct {
     Version     int
     Description string

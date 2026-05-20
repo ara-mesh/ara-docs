@@ -9,7 +9,7 @@ This page documents the v1 API. Breaking changes will be released under v2 with 
 ## Import
 
 ```go
-import ara "github.com/ara-mesh/ara-go"
+import ara "github.com/ara-mesh/ara-sdk-go"
 ```
 
 `CGO_ENABLED=1` is required at build time. No other C dependencies are needed — the engine
@@ -39,7 +39,7 @@ type Config struct {
     Encryption   bool          // enable X25519 keypairs + AES-256-GCM on all messages (default: false)
     SyncInterval time.Duration // periodic handshake interval; 0 = default 30s; increase for LoRa nodes
     OTLPAddr        string        // optional OTLP gRPC endpoint, e.g. "localhost:4317"
-    OTLPServiceName string        // optional OTel service name; defaults to "ara-go"
+    OTLPServiceName string        // optional OTel service name; defaults to "ara-sdk-go"
     LicenseKey      string        // Ed25519-signed key from Ara; empty = 10-node evaluation limit
 }
 ```
