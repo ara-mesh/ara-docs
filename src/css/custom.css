@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── Ara design tokens ──────────────────────────────────────────────────── */
+
+:root {
+  --ifm-color-primary: oklch(0.7 0.10 222);
+  --ifm-color-primary-dark: oklch(0.62 0.12 222);
+  --ifm-color-primary-darker: oklch(0.55 0.13 222);
+  --ifm-color-primary-darkest: oklch(0.47 0.14 222);
+  --ifm-color-primary-light: oklch(0.77 0.09 222);
+  --ifm-color-primary-lighter: oklch(0.83 0.07 222);
+  --ifm-color-primary-lightest: oklch(0.90 0.05 222);
+
+  --ifm-font-family-monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ifm-code-font-size: 90%;
+  --ifm-font-family-base: system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-navbar-height: 52px;
+
+  --docusaurus-highlighted-code-line-bg: rgba(14, 165, 233, 0.12);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: oklch(0.78 0.12 70);
+  --ifm-color-primary-dark: oklch(0.70 0.14 70);
+  --ifm-color-primary-darker: oklch(0.62 0.15 70);
+  --ifm-color-primary-darkest: oklch(0.54 0.16 70);
+  --ifm-color-primary-light: oklch(0.84 0.10 70);
+  --ifm-color-primary-lighter: oklch(0.89 0.08 70);
+  --ifm-color-primary-lightest: oklch(0.94 0.05 70);
+
+  --docusaurus-highlighted-code-line-bg: rgba(232, 179, 80, 0.1);
+}
+
+/* ── Navbar ─────────────────────────────────────────────────────────────── */
+
+.navbar {
+  background: #0f1115;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f6f3ec;
+}
+
+.navbar__link {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: rgba(232,230,223,0.65) !important;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: #f6f3ec !important;
+}
+
+/* ── Admonitions ────────────────────────────────────────────────────────── */
+
+.alert--caution {
+  border-left-color: var(--ifm-color-warning);
+}
+
+/* ── Docs sidebar ───────────────────────────────────────────────────────── */
+
+.menu__link {
+  font-size: 0.825rem;
+}

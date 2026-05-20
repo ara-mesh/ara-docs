@@ -1,0 +1,37 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.transports {
+  padding: 2rem 0 3rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.transportTable {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+}
+
+.transportTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transportTable th,
+.transportTable td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-table-border-color);
+  text-align: left;
+}
+
+.transportTable th {
+  background: var(--ifm-table-head-background);
+}
