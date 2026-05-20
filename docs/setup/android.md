@@ -11,7 +11,7 @@ sidebar_position: 2
 
 ## Add the SDK
 
-Download `ara-sdk.aar` from the [latest GitHub Release](https://github.com/ara-mesh/ara/releases/latest)
+Download `ara-sdk.aar` from the [latest GitHub Release](https://github.com/ara-mesh/ara-sdk-android/releases/latest)
 and place it in your app's `libs/` directory:
 
 ```
@@ -152,5 +152,5 @@ sender's clock.
 
 ## ViewModel pattern
 
-See the [example app](https://github.com/ara-mesh/ara/releases/latest) for a
+See the [example app](https://github.com/ara-mesh/ara-sdk-android/releases/latest) for a
 complete `AndroidViewModel` implementation with coroutines, state flow, and polling.

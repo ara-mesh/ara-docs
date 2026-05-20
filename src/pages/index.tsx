@@ -94,7 +94,7 @@ function Hero() {
             <Link className={styles.btnPrimary} to="/docs/setup/go">
               READ THE GO QUICKSTART →
             </Link>
-            <Link className={styles.btnSecondary} to="https://github.com/ara-mesh/ara">
+            <Link className={styles.btnSecondary} to="https://github.com/ara-mesh">
               VIEW ON GITHUB
             </Link>
           </div>
@@ -270,7 +270,7 @@ function CTA() {
           <Link className={styles.ctaBtnPrimary} to="/docs/setup/go">
             Go quickstart →
           </Link>
-          <Link className={styles.ctaBtnOutline} to="https://github.com/ara-mesh/ara">
+          <Link className={styles.ctaBtnOutline} to="https://github.com/ara-mesh">
             GitHub ↗
           </Link>
         </div>

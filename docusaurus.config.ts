@@ -36,7 +36,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/ara-mesh/ara/tree/main/site/',
+          editUrl: 'https://github.com/ara-mesh/ara-docs/tree/main/',
         },
         blog: false,
         theme: {
