@@ -1,41 +1,24 @@
-# Website
+# ara-docs
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+Documentation site for [Ara Mesh](https://github.com/ara-mesh) — built with [Docusaurus](https://docusaurus.io/) and deployed to GitHub Pages.
 
-## Installation
-
-```bash
-yarn
-```
-
-## Local Development
+## Local development
 
 ```bash
-yarn start
+npm install
+npm start
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+Opens a live-reloading dev server at `http://localhost:3000`.
 
 ## Build
 
 ```bash
-yarn build
+npm run build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+Generates static output to `build/`. Deployed automatically to GitHub Pages on push to `main`.
 
-## Deployment
+## Live site
 
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+[ara-mesh.github.io/ara-docs](https://ara-mesh.github.io/ara-docs)
