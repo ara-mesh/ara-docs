@@ -60,7 +60,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/ara-mesh/ara',
+          href: 'https://github.com/ara-mesh',
           label: 'GitHub',
           position: 'right',
         },
@@ -89,7 +89,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/ara-mesh/ara',
+              href: 'https://github.com/ara-mesh',
             },
           ],
         },
