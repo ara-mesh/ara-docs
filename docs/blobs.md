@@ -32,31 +32,46 @@ node.Sync(ctx)
 ```mermaid
 sequenceDiagram
     participant App
-    participant NodeA as Node A
-    participant NodeB as Node B
+    participant Owner
+    participant Peer
 
-    App->>NodeA: IngestBlob(file, mime)
-    Note over NodeA: store bytes, hash → id,<br/>write ara_blobs row
-    NodeA-->>App: id (SHA-256)
+    App->>Owner: IngestBlob(file, mime)
+    Note over Owner: store bytes, hash → id,<br/>thumbnail if image,<br/>write ara_blobs row
+    Owner-->>App: id (SHA-256)
 
-    NodeA->>NodeB: changeset sync (ara_blobs metadata only)
-    Note over NodeB: now knows the blob exists;<br/>policy = Full and bytes missing?
+    par metadata converges (CRDT)
+        Owner->>Peer: ara_blobs row (changeset sync)
+    and announce (push)
+        Owner-->>Peer: Announce "I have id" (broadcast)
+    end
 
-    NodeB->>NodeA: fetch request (dial byte channel)
-    NodeA-->>NodeB: stream bytes (resumable, offset-based)
-    Note over NodeB: BlobPath(id) now returns a local path
+    alt UDP — resumable sidecar
+        Peer->>Owner: FetchBlob(id, offset)
+        Owner-->>Peer: stream bytes (resumable)
+    else MQTT — inline full
+        Peer->>Owner: Request(full)
+        Owner-->>Peer: Deliver(bytes)
+    else LoRa — inline thumbnail
+        Peer->>Owner: Request(thumb)
+        Owner-->>Peer: Deliver(thumb ≤ 2 KB)
+    end
+
+    Note over Peer: BlobPath(id) resolves (full),<br/>or the thumbnail is stored
 ```
 
-1. **Ingest** — `IngestBlob` copies the file into the store, computes its id, and writes a
-   row into `ara_blobs` (id, mime type, size, origin node).
-2. **Metadata sync** — `ara_blobs` is a CRR, so the metadata reaches every peer through the
-   normal changeset path. Peers now *know about* the blob.
-3. **Byte fetch** — after merging a changeset that introduces new `ara_blobs` rows, each
-   node checks its [policy](#blob-policy). If the policy wants the bytes and the node
-   doesn't have them, it dials a peer that does and streams them — resuming from any partial
-   download.
+1. **Ingest** — `IngestBlob` copies the file into the store, computes its id, writes a row
+   into `ara_blobs` (id, mime type, size, owner), and — for image MIME types — generates a
+   ≤ 2 KB thumbnail.
+2. **Announce + metadata** — the owner broadcasts an `Announce` ("I have id") over every
+   transport, and the `ara_blobs` row (a CRR) converges to every peer through the normal
+   changeset path. Both happen on ingest.
+3. **Byte fetch** — a peer that wants the bytes reacts to the announce by the transport it
+   arrived on: **UDP** pulls the full blob from the owner over the resumable TCP sidecar;
+   **MQTT** requests the full blob inline; **LoRa** requests the thumbnail inline. Bytes
+   always come from the recorded owner. The periodic CRDT sync cycle is a **catch-up
+   fallback** for announces missed while a node was offline.
 4. **Availability** — once the bytes land, `BlobPath(id)` returns a local filesystem path
-   instead of `""`.
+   instead of `""` (or the thumbnail is available for preview).
 
 ## API
 
