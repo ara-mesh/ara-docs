@@ -29,20 +29,22 @@ node.Sync(ctx)
 
 ## Lifecycle
 
-```
-┌─────────┐  IngestBlob   ┌──────────┐  changeset sync   ┌──────────┐
-│  file   │ ────────────▶ │  node A  │ ────────────────▶ │  node B  │
-└─────────┘               │ has bytes│   (metadata only) │ metadata │
-                          └──────────┘                   └────┬─────┘
-                                                              │ policy = Full?
-                                                              ▼
-                                              dial A's byte channel, stream bytes
-                                                              │
-                                                              ▼
-                                                        ┌──────────┐
-                                                        │  node B  │
-                                                        │ has bytes│
-                                                        └──────────┘
+```mermaid
+sequenceDiagram
+    participant App
+    participant NodeA as Node A
+    participant NodeB as Node B
+
+    App->>NodeA: IngestBlob(file, mime)
+    Note over NodeA: store bytes, hash → id,<br/>write ara_blobs row
+    NodeA-->>App: id (SHA-256)
+
+    NodeA->>NodeB: changeset sync (ara_blobs metadata only)
+    Note over NodeB: now knows the blob exists;<br/>policy = Full and bytes missing?
+
+    NodeB->>NodeA: fetch request (dial byte channel)
+    NodeA-->>NodeB: stream bytes (resumable, offset-based)
+    Note over NodeB: BlobPath(id) now returns a local path
 ```
 
 1. **Ingest** — `IngestBlob` copies the file into the store, computes its id, and writes a
