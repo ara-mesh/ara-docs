@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
       label: 'SDK Reference (v1)',
       items: ['sdk/v1/go', 'sdk/v1/android'],
     },
+    'peers',
     {
       type: 'category',
       label: 'Transports',
@@ -23,6 +24,7 @@ const sidebars: SidebarsConfig = {
         'transports/lora',
       ],
     },
+    'blobs',
     {
       type: 'category',
       label: 'Schema',

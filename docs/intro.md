@@ -50,4 +50,6 @@ MQTT — with graceful degradation when links go down.
 - [Go Setup](./setup/go.md) — prerequisites and quick start for Go developers
 - [Android Setup](./setup/android.md) — add Ara to an Android app
 - [SDK Reference](./sdk/v1/go.md) — full Go API reference
+- [Peers](./peers.md) — how nodes discover and connect to each other
 - [Transports](./transports/overview.md) — configure UDP or LoRa
+- [Blob Transfer](./blobs.md) — attach and replicate photos and files

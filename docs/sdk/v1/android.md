@@ -19,6 +19,7 @@ object Ara {
         networkId: String = "",
         encryption: Boolean = false,
         licenseKey: String = "",
+        syncIntervalSeconds: Int = 30,
     ): Node
 }
 ```
@@ -29,6 +30,7 @@ object Ara {
 - `networkId` — logical mesh identifier; only nodes with the same value exchange changesets (default: `""` syncs with all nodes)
 - `encryption` — enable X25519 keypairs and AES-256-GCM message encryption (default: `false`)
 - `licenseKey` — Ed25519-signed key from Ara; empty string runs in evaluation mode (10-node limit)
+- `syncIntervalSeconds` — periodic handshake interval (default 30s); widen for LoRa nodes to stay within the duty-cycle budget
 
 Throws `AraException` if the engine fails to initialise.
 
@@ -57,8 +59,8 @@ class Node : AutoCloseable {
     fun initOTLP(otlpAddr: String, serviceName: String = "ara-android")
 
     // Blob / file transfer
-    fun setBlobPolicy(dir: String, mode: Int = 0, maxBytes: Long = 0L, maxBlobSize: Long = 0L)
-    fun blobIngest(path: String, mimeType: String = "application/octet-stream"): String
+    fun setBlobStore(dir: String, policy: BlobPolicy = BlobPolicy())
+    fun ingestBlob(path: String, mimeType: String = "application/octet-stream"): String
     fun blobPath(id: String): String
 
     override fun close()
@@ -156,37 +158,40 @@ node.addTransportMQTT(brokerUrl = "tcp://192.168.1.100:1883", networkId = "my-ne
 
 Send OpenTelemetry traces to a collector at `otlpAddr` (e.g. `"192.168.1.100:4317"`).
 
-### setBlobPolicy
+### setBlobStore
 
 Configure the blob store directory and automatic sync behaviour. Must be called before
-`addTransportUDP` / `addTransportMQTT`.
+`addTransportUDP` / `addTransportMQTT`. The policy is a typed [`BlobPolicy`](#blobpolicy)
+with a [`BlobSyncMode`](#blobpolicy) enum.
 
 ```kotlin
-node.setBlobPolicy(
+node.setBlobStore(
     dir = filesDir.absolutePath + "/blobs",
-    mode = 2,          // 0 = none, 1 = thumbnails only, 2 = full
-    maxBytes = 0L,     // total storage cap; 0 = unlimited
-    maxBlobSize = 0L,  // skip individual blobs larger than this; 0 = unlimited
+    policy = BlobPolicy(
+        mode = BlobSyncMode.Full,  // None | ThumbOnly | Full
+        maxBytes = 0L,             // total storage cap; 0 = unlimited
+        maxBlobSize = 0L,          // skip individual blobs larger than this; 0 = unlimited
+    ),
 )
 ```
 
-- **mode 0 (none)** — blobs are only stored on the node that ingested them; no automatic
+- **`BlobSyncMode.None`** — blobs are only stored on the node that ingested them; no automatic
   pulling from peers. Default.
-- **mode 1 (thumb only)** — pull thumbnails (≤ 2 KB) from peers; skip full-size blobs.
+- **`BlobSyncMode.ThumbOnly`** — pull thumbnails (≤ 2 KB) from peers; skip full-size blobs.
   Suited for LoRa-constrained nodes.
-- **mode 2 (full)** — pull full blob bytes from any peer that has them, via the TCP sidecar
-  on UDP transport or via MQTT.
+- **`BlobSyncMode.Full`** — pull full blob bytes from any peer that has them, via the TCP
+  sidecar on UDP transport or via MQTT.
 
 The SDK manages the blob tables (`ara_blobs`, `ara_blob_local_state`) automatically — they
 do not need to appear in your migration list.
 
-### blobIngest
+### ingestBlob
 
 Copy a local file into the blob store, record its metadata in `ara_blobs`, and mark it
 locally available. Returns the SHA-256 id that can be stored in app tables.
 
 ```kotlin
-val id = node.blobIngest(
+val id = node.ingestBlob(
     path = "/data/user/0/com.example/cache/photo.jpg",
     mimeType = "image/jpeg",
 )
@@ -198,7 +203,7 @@ node.exec(
 node.sync()
 ```
 
-Other nodes with `mode = 2` will automatically pull the blob bytes over the TCP sidecar
+Other nodes with `BlobSyncMode.Full` will automatically pull the blob bytes over the TCP sidecar
 after receiving the `ara_blobs` metadata via the normal CRDT changeset sync.
 
 ### blobPath
@@ -302,6 +307,26 @@ data class GraphEdge(
 data class GraphData(
     val nodes: List<GraphNode> = emptyList(),
     val edges: List<GraphEdge> = emptyList(),
+)
+```
+
+---
+
+## BlobPolicy
+
+Passed to [`setBlobStore`](#setblobstore).
+
+```kotlin
+enum class BlobSyncMode(val code: Int) {
+    None(0),       // metadata only; never pull bytes (default)
+    ThumbOnly(1),  // pull thumbnails only (≤ 2 KB)
+    Full(2),       // pull full blobs when the transport allows
+}
+
+data class BlobPolicy(
+    val mode: BlobSyncMode = BlobSyncMode.None,
+    val maxBytes: Long = 0L,      // total store cap in bytes; 0 = unlimited
+    val maxBlobSize: Long = 0L,   // skip blobs larger than this; 0 = unlimited
 )
 ```
 

@@ -4,7 +4,9 @@ sidebar_position: 1
 
 # Go SDK Reference (v1)
 
-This page documents the v1 API. Breaking changes will be released under v2 with a new import path.
+This page documents the API in the `v1` import path. The SDK is pre-1.0 (`v0.0.x-rc`) and
+**unstable** — the API may change between releases until the first `1.0.0` tag. The `v1/`
+path segment is the import-path major generation, not a stability promise.
 
 ## Import
 
@@ -39,7 +41,7 @@ type Config struct {
     Encryption   bool          // enable X25519 keypairs + AES-256-GCM on all messages (default: false)
     SyncInterval time.Duration // periodic handshake interval; 0 = default 30s; increase for LoRa nodes
     OTLPAddr        string        // optional OTLP gRPC endpoint, e.g. "localhost:4317"
-    OTLPServiceName string        // optional OTel service name; defaults to "ara-sdk-go"
+    OTLPServiceName string        // optional OTel service name; defaults to "ara-go"
     LicenseKey      string        // Ed25519-signed key from Ara; empty = 10-node evaluation limit
 }
 ```
@@ -148,6 +150,54 @@ v := node.SchemaVersion() // highest applied migration version
 ```go
 peers, err := node.Peers(ctx) // []PeerInfo
 ```
+
+### PeerGraph
+
+```go
+g, err := node.PeerGraph(ctx) // GraphData{ Nodes []GraphNode, Edges []GraphEdge }
+```
+
+Returns the mesh topology. `Nodes` includes this device (`Self == true`) and all known
+peers; an edge with `Direct == true` was heard from the peer directly, otherwise it was
+introduced via gossip. Use this to drive a node-health map.
+
+### PublicKey
+
+```go
+key := node.PublicKey() // hex-encoded X25519 public key; "" if encryption disabled
+```
+
+Share this with operators of other nodes so they can call [`AllowPeer`](#allowpeer).
+
+### AllowPeer
+
+```go
+err := node.AllowPeer(ctx, pubkeyHex, "Team 3 tablet")
+```
+
+Add a peer's public key to the CRDT-synced allowlist under a human-readable label. When
+`Config.Encryption` is set, only allowed peers are trusted. The entry propagates to all
+trusted peers via normal sync.
+
+### RevokePeer
+
+```go
+err := node.RevokePeer(ctx, pubkeyHex)
+```
+
+Mark a peer's public key as revoked in the allowlist. The revocation propagates to all
+nodes; the revoked node's messages are then dropped.
+
+### InitOTLP
+
+```go
+err := node.InitOTLP(ctx, "broker-host:4317", "ara-go")
+```
+
+Point OpenTelemetry trace export at an endpoint at runtime, replacing any previous exporter.
+`Config.OTLPAddr` configures the same thing at open time; use `InitOTLP` to re-point at an
+endpoint discovered later (e.g. an MQTT broker host the operator connects to). `serviceName`
+may be empty (defaults to `"ara-go"`).
 
 ### AddTransportUDP
 
@@ -306,6 +356,31 @@ type PeerInfo struct {
     SchemaVersion int
     Health        string   // "HEALTHY" | "DEGRADED" | "ISOLATED" | "UNKNOWN"
     Transports    []string
+}
+```
+
+---
+
+## ara.GraphData
+
+Returned by [`PeerGraph`](#peergraph).
+
+```go
+type GraphData struct {
+    Nodes []GraphNode
+    Edges []GraphEdge
+}
+
+type GraphNode struct {
+    ID     string
+    Health string
+    Self   bool   // true for this device
+}
+
+type GraphEdge struct {
+    Source string
+    Target string
+    Direct bool   // true = heard directly; false = introduced via gossip
 }
 ```
 

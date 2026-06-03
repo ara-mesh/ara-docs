@@ -47,7 +47,7 @@ broadcast, ensuring discovery even when broadcast is unavailable.
 
 ## Blob transfer (TCP sidecar)
 
-When a blob store is configured (`node.SetBlobStore` / `node.setBlobPolicy`), the UDP
+When a blob store is configured (`node.SetBlobStore` / `node.setBlobStore`), the UDP
 transport opens a TCP listener on **port + 1** (default `7947`) alongside the UDP socket.
 This sidecar is used exclusively for blob byte transfer — CRDT changesets continue over UDP.
 
