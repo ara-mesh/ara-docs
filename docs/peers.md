@@ -7,7 +7,12 @@ sidebar_position: 3
 A *peer* is another Ara node this node can sync with. Ara has no central registry and no
 explicit "connect to peer" call — peers are **discovered automatically** over whatever
 transports you add. This page covers how peers are found, how to add them when discovery
-isn't automatic, and the APIs for inspecting them.
+isn't automatic, the APIs for inspecting them, and — when encryption is enabled — how to
+**authorize** which peers you trust.
+
+> **Discovery is not trust.** Without encryption, any discovered peer syncs. With
+> `Encryption` enabled, a discovered peer is ignored until its public key is on your
+> allowlist — see [Trusting peers](#trusting-peers-encryption).
 
 ## How peers are discovered
 
@@ -111,10 +116,15 @@ heartbeat cadence:
 | `ISOLATED` | Not heard from for well beyond the timeout; presumed unreachable |
 | `UNKNOWN` | Insufficient history to classify (just discovered, or just started) |
 
-### Peer graph (Android)
+### Peer graph
 
-The Android SDK additionally exposes the mesh topology, including peers learned
-*indirectly* through gossip:
+Both SDKs expose the mesh topology, including peers learned *indirectly* through gossip:
+
+```go
+g, err := node.PeerGraph(ctx) // GraphData{ Nodes, Edges }
+for _, n := range g.Nodes { /* n.ID, n.Health, n.Self */ }
+for _, e := range g.Edges { /* e.Source → e.Target, e.Direct */ }
+```
 
 ```kotlin
 val graph = node.peerGraph()
@@ -125,6 +135,55 @@ graph.edges.forEach { e -> /* e.source → e.target, e.direct */ }
 A **direct** edge means this node heard from the peer itself; an **indirect** edge means
 the peer was introduced by a third node's gossip. This is what drives the node-health map
 in the ICP dashboard.
+
+## Trusting peers (encryption)
+
+When a node is opened with `Encryption` enabled (X25519 + AES-256-GCM), discovery alone
+does **not** grant trust. Each node has a keypair; a peer's messages are only accepted once
+its public key is on this node's **allowlist**. The allowlist is itself CRDT-synced, so an
+authorization made on one node propagates to every other trusted node.
+
+Without encryption this section does not apply — all discovered peers sync.
+
+### Exchange public keys
+
+Each node exposes its own key; share it (out-of-band — QR code, radio, paper) with whoever
+operates the other node.
+
+```go
+key := node.PublicKey() // hex-encoded X25519 key; "" if encryption is disabled
+```
+
+```kotlin
+val key = node.publicKey()
+```
+
+### Allow a peer
+
+Add a peer's public key to the allowlist under a human-readable label:
+
+```go
+err := node.AllowPeer(ctx, peerPubkeyHex, "Team 3 tablet")
+```
+
+```kotlin
+node.allowPeer(peerPubkeyHex, "Team 3 tablet")
+```
+
+### Revoke a peer
+
+Mark a key as revoked; the revocation propagates to all trusted nodes, after which the
+revoked node's messages are dropped:
+
+```go
+err := node.RevokePeer(ctx, peerPubkeyHex)
+```
+
+```kotlin
+node.revokePeer(peerPubkeyHex)
+```
+
+Trust is mutual: for two encrypted nodes to sync, **each** must allow the other's key.
 
 ## Schema compatibility
 
